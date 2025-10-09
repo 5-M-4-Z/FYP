@@ -1197,7 +1197,7 @@ for i in range (-20,20):
 				"UseLocalCS:="		, False
 			])
 		oDesign.AnalyzeAll()
-		oProject.SaveAs("D:\\UNI\\FYP\\Temp\\temp.aedt", True)
+		oProject.SaveAs("D:\\UNI\\FYP\\4-Patch\\Temp\\temp.aedt", True)
 		oModule = oDesign.GetModule("ReportSetup")
 		oModule.CreateReport("S Parameter Plot 1", "Modal Solution Data", "Rectangular Plot", "Setup1 : Sweep", 
 			[
@@ -1229,8 +1229,8 @@ for i in range (-20,20):
 		oEditor = oDesign.SetActiveEditor("3D Modeler")
 
 		oModule = oDesign.GetModule("ReportSetup")
-		oModule.ExportToFile("S Parameter Plot 1", "D:/UNI/FYP/S11_Data_Sets/S-11 Plot--Hole_x-" + hole_x + " -- Hole_y-" + hole_y + ".csv", False)
-		oModule.ExportToFile("Axial Ratio Plot 1", "D:/UNI/FYP/Axial_Ratio_Data_Sets/Axial Ratio Plot--Hole_x-" + hole_x + " -- Hole_y-" + hole_y + ".csv", False)
+		oModule.ExportToFile("S Parameter Plot 1", "D:/UNI/FYP/4-Patch/S11_Data_Sets/S-11 Plot--Hole_x-" + hole_x + " -- Hole_y-" + hole_y + ".csv", False)
+		oModule.ExportToFile("Axial Ratio Plot 1", "D:/UNI/FYP/4-Patch/Axial_Ratio_Data_Sets/Axial Ratio Plot--Hole_x-" + hole_x + " -- Hole_y-" + hole_y + ".csv", False)
 		oDesktop.DeleteProject("temp")
 
 
