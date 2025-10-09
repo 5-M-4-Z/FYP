@@ -7,6 +7,8 @@ oDesktop.RestoreWindow()
 for i in range (-20,20):
 	hole_x = "%fmm" % (0 + i*0.0254)
 	for j in range(-20,20):
+		if i == -20 and j <= -5:
+			continue
 		hole_y = "%fmm" % (82.0032 + j*0.0254)
 
 		oProject = oDesktop.NewProject()
