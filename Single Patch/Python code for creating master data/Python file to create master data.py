@@ -43,16 +43,16 @@ master_data = {
                     "Truncation along X": [],
                     "Truncation along Y": [],
                     "Peak Frequency": [],
-                    "Frequency": [],
                     "S11 dB value": [],
                     "Axial Ratio at Fr (dB)": []
                 }
 
 # following code would generate an excel file that will consist of master data of the raw data from feed x and y
 
-lst = [r"D:\UNI\FYP\Single Patch\Datasets\Feed x and y",
-       r"D:\UNI\FYP\Single Patch\Datasets\Patch Width & Length",
-       r"D:\UNI\FYP\Single Patch\Datasets\Truncation\Dataset - Truncation (0-25 mil)"
+lst = [r"D:\Meesam\FYP\Single Patch\Datasets\Feed x and y",
+       r"D:\Meesam\FYP\Single Patch\Datasets\Patch Width & Length",
+       r"D:\Meesam\FYP\Single Patch\Datasets\Truncation\Dataset - Truncation (0-25 mil)",
+       r"D:\Meesam\FYP\Single Patch\Datasets\Patch x and y"
        ]
 
 for folder_path_1 in lst:
@@ -87,77 +87,82 @@ for folder_path_1 in lst:
                     # Finding lower and upper bound for the frequency that had highest dB gain from the cs file
                     # 0.00015 = step size in the csv file and threshold bandwidth = 0.00015*27 = 0.00405 GHz
                     peak_freq = S11_freq[ind]
-                    low_bound = round(peak_freq - (0.00015*27),6)
-                    upper_bound = round(peak_freq + (0.00015*27),6)
-                    lb_ind = S11_freq.index(low_bound)
-                    up_ind = S11_freq.index(upper_bound)
                     
-                    # The following list include the data points for the specified range
-                    S11_freq = S11_freq[lb_ind:up_ind+1]
-                    freq_db = freq_db[lb_ind:up_ind+1]
-
                     # breaking the file name to get the changed input parameter
                     
                     path_to_list = full_path.split("\\")
                     path_to_list = path_to_list[0:-1]
                     # print("The name of the path in list format is:", name = filename[0:-4].split("_"))
                     # Following pieces of code update parameter for single patch width and length
-                    if path_to_list == ['D:', 'UNI', 'FYP', 'Single Patch', 'Datasets', 'Patch Width & Length', 'S11 Parameter']:
+                    if path_to_list == ['D:', 'Meesam', 'FYP', 'Single Patch', 'Datasets', 'Patch Width & Length', 'S11 Parameter']:
                         name = filename[0:-4].split("_")
                         patch_width = float(name[name.index("patchW") + 1])
                         patch_length = float(name[name.index("patchL") + 1])
                         
 
-                        for i in range(len(S11_freq)):
-                            master_data["Patch Width"].append(patch_width)
-                            master_data["Patch Length"].append(patch_length)
-                            master_data["Patch X"].append(patch_x)
-                            master_data["Patch Y"].append(patch_y)
-                            master_data["Feed X"].append(feed_x)
-                            master_data["Feed Y"].append(feed_y)
-                            master_data["Truncation along X"].append(truncated_length)
-                            master_data["Truncation along Y"].append(truncated_length)
-                            master_data["Peak Frequency"].append(peak_freq)
-                            master_data["Frequency"].append(S11_freq[i])
-                            master_data["S11 dB value"].append(freq_db[i])  
+                        master_data["Patch Width"].append(patch_width)
+                        master_data["Patch Length"].append(patch_length)
+                        master_data["Patch X"].append(patch_x)
+                        master_data["Patch Y"].append(patch_y)
+                        master_data["Feed X"].append(feed_x)
+                        master_data["Feed Y"].append(feed_y)
+                        master_data["Truncation along X"].append(truncated_length)
+                        master_data["Truncation along Y"].append(truncated_length)
+                        master_data["Peak Frequency"].append(peak_freq)
+                        master_data["S11 dB value"].append(freq_db[ind])  
 
-                    elif path_to_list == ['D:', 'UNI', 'FYP', 'Single Patch', 'Datasets', 'Feed x and y', 'S11 Parameter']:
+                    elif path_to_list == ['D:', 'Meesam', 'FYP', 'Single Patch', 'Datasets', 'Feed x and y', 'S11 Parameter']:
                         name = filename[0:-4].split("_")
                         feed_x = float(name[name.index("feedX") + 1])
                         feed_y = float(name[name.index("feedY") + 1])
                         
 
-                        for i in range(len(S11_freq)):
-                            master_data["Patch Width"].append(patch_width)
-                            master_data["Patch Length"].append(patch_length)
-                            master_data["Patch X"].append(patch_x)
-                            master_data["Patch Y"].append(patch_y)
-                            master_data["Feed X"].append(feed_x)
-                            master_data["Feed Y"].append(feed_y)
-                            master_data["Truncation along X"].append(truncated_length)
-                            master_data["Truncation along Y"].append(truncated_length)
-                            master_data["Peak Frequency"].append(peak_freq)
-                            master_data["Frequency"].append(S11_freq[i])
-                            master_data["S11 dB value"].append(freq_db[i])
+                        master_data["Patch Width"].append(patch_width)
+                        master_data["Patch Length"].append(patch_length)
+                        master_data["Patch X"].append(patch_x)
+                        master_data["Patch Y"].append(patch_y)
+                        master_data["Feed X"].append(feed_x)
+                        master_data["Feed Y"].append(feed_y)
+                        master_data["Truncation along X"].append(truncated_length)
+                        master_data["Truncation along Y"].append(truncated_length)
+                        master_data["Peak Frequency"].append(peak_freq)
+                        master_data["S11 dB value"].append(freq_db[ind])
 
-                    elif path_to_list == ['D:', 'UNI', 'FYP', 'Single Patch', 'Datasets', 'Truncation', 'Dataset - Truncation (0-25 mil)', 'S11 Parameter']:
+                    elif path_to_list == ['D:', 'Meesam', 'FYP', 'Single Patch', 'Datasets', 'Truncation', 'Dataset - Truncation (0-25 mil)', 'S11 Parameter']:
                         name = filename[0:-4].split("_")
                         truncX = float(name[name.index("truncX") + 1])
                         truncY = float(name[name.index("truncY") + 1])
                         
 
-                        for i in range(len(S11_freq)):
-                            master_data["Patch Width"].append(patch_width)
-                            master_data["Patch Length"].append(patch_length)
-                            master_data["Patch X"].append(patch_x)
-                            master_data["Patch Y"].append(patch_y)
-                            master_data["Feed X"].append(feed_x)
-                            master_data["Feed Y"].append(feed_y)
-                            master_data["Truncation along X"].append(truncX)
-                            master_data["Truncation along Y"].append(truncY)
-                            master_data["Peak Frequency"].append(peak_freq)
-                            master_data["Frequency"].append(S11_freq[i])
-                            master_data["S11 dB value"].append(freq_db[i])
+                        master_data["Patch Width"].append(patch_width)
+                        master_data["Patch Length"].append(patch_length)
+                        master_data["Patch X"].append(patch_x)
+                        master_data["Patch Y"].append(patch_y)
+                        master_data["Feed X"].append(feed_x)
+                        master_data["Feed Y"].append(feed_y)
+                        master_data["Truncation along X"].append(truncX)
+                        master_data["Truncation along Y"].append(truncY)
+                        master_data["Peak Frequency"].append(peak_freq)
+                        master_data["S11 dB value"].append(freq_db[ind])
+                    
+                    elif path_to_list == ['D:', 'Meesam', 'FYP', 'Single Patch', 'Datasets', 'Patch x and y', 'S11 Parameter']:
+                        name = filename[0:-4].split("_")
+                        patch_x = float(name[name.index("antX") + 1])
+                        patch_y = float(name[name.index("antY") + 1])
+                        feed_x = float(name[name.index("feedX") + 1])
+                        feed_y = float(name[name.index("feedY") + 1])
+
+
+                        master_data["Patch Width"].append(patch_width)
+                        master_data["Patch Length"].append(patch_length)
+                        master_data["Patch X"].append(patch_x)
+                        master_data["Patch Y"].append(patch_y)
+                        master_data["Feed X"].append(feed_x)
+                        master_data["Feed Y"].append(feed_y)
+                        master_data["Truncation along X"].append(truncX)
+                        master_data["Truncation along Y"].append(truncY)
+                        master_data["Peak Frequency"].append(peak_freq)
+                        master_data["S11 dB value"].append(freq_db[ind])
 
                     else:
                         print("no patchW and patchL found in the csv file name")
@@ -193,17 +198,17 @@ for folder_path_1 in lst:
                     path_to_list = full_path.split("\\")
                     path_to_list = path_to_list[0:-1]
                     # Following pieces of code update parameter for single patch width and length
-                    if path_to_list == ['D:', 'UNI', 'FYP', 'Single Patch', 'Datasets', 'Patch Width & Length','Axial Ratio Parameter']:
-                        for i in range(len(S11_freq)):
-                            master_data["Axial Ratio at Fr (dB)"].append(axial_db_value)
+                    if path_to_list == ['D:', 'Meesam', 'FYP', 'Single Patch', 'Datasets', 'Patch Width & Length','Axial Ratio Parameter']:
+                        master_data["Axial Ratio at Fr (dB)"].append(axial_db_value)
 
-                    elif path_to_list == ['D:', 'UNI', 'FYP', 'Single Patch', 'Datasets', 'Feed x and y','Axial Ratio Parameter']:
-                        for i in range(len(S11_freq)):
-                            master_data["Axial Ratio at Fr (dB)"].append(axial_db_value)
+                    elif path_to_list == ['D:', 'Meesam', 'FYP', 'Single Patch', 'Datasets', 'Feed x and y','Axial Ratio Parameter']:
+                        master_data["Axial Ratio at Fr (dB)"].append(axial_db_value)
 
-                    elif path_to_list == ['D:', 'UNI', 'FYP', 'Single Patch', 'Datasets', 'Truncation', 'Dataset - Truncation (0-25 mil)','Axial Ratio Parameter']:
-                        for i in range(len(S11_freq)):
-                            master_data["Axial Ratio at Fr (dB)"].append(axial_db_value)
+                    elif path_to_list == ['D:', 'Meesam', 'FYP', 'Single Patch', 'Datasets', 'Truncation', 'Dataset - Truncation (0-25 mil)','Axial Ratio Parameter']:
+                        master_data["Axial Ratio at Fr (dB)"].append(axial_db_value)
+
+                    elif path_to_list == ['D:', 'Meesam', 'FYP', 'Single Patch', 'Datasets', 'Patch x and y','Axial Ratio Parameter']:
+                        master_data["Axial Ratio at Fr (dB)"].append(axial_db_value)
 
                 
         
@@ -213,6 +218,8 @@ for folder_path_1 in lst:
 
 print("Master data set created successfully")
 
+for key in master_data:
+    print(len(master_data[key]))
 
 df = pd.DataFrame(master_data)
 
