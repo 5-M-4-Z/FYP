@@ -1,0 +1,1039 @@
+% ansys path = C:\Program Files\AnsysEM\v241\Win64\ansysedt.exe
+
+
+clc;
+clear all;
+
+%%%%% Antenna design calculation - PATCH CENTERED ON SUBSTRATE %%%%%
+freq = 1575.42 * 10^6;
+subs_height = 1.6;  % mm
+subs_e = 4.4;
+mil = 25.4/1000;
+patch_h = 0.035;
+ground_h = 0.035;
+feed_rad = 1.6;
+feed_inner_h = ground_h;
+feed_lower_h = -5;  % mm
+
+% Patch dimensions
+patch_w = 45;  % mm
+patch_l = 45;  % mm
+
+% Ground plane dimensions (starting from origin)
+ground_w = 90;  % mm  
+ground_l = 90;  % mm
+
+% Calculate patch position to center it on substrate
+antenna_x = (ground_w - patch_w) / 2;  % (90-45)/2 = 22.5 mm
+antenna_y = (ground_l - patch_l) / 2;  % (90-45)/2 = 22.5 mm
+
+% Feed point coordinates (relative to patch center)
+patch_center_x = antenna_x + patch_w/2;  % 22.5 + 22.5 = 45 mm
+patch_center_y = antenna_y + patch_l/2;  % 22.5 + 22.5 = 45 mm
+
+feed_x_relative = 0.0;  % mm (relative to patch center in x)
+feed_y_relative = -13.3873;  % mm (relative to patch center in y)
+
+% Absolute feed point coordinates (centered with patch)
+feed_x = patch_center_x + feed_x_relative;  % 45 + 0 = 45 mm
+feed_y = patch_center_y + feed_y_relative;  % 45 - 13.3873 = 31.6127 mm
+
+% Truncated corner coordinates (relative to patch position)
+truncated_length = 6;  % mm
+
+% Top-left truncated triangle (near top-left corner of patch)
+truncatedTopLeft_x = [antenna_x, antenna_x + truncated_length, antenna_x];
+truncatedTopLeft_y = [antenna_y + patch_l, antenna_y + patch_l, antenna_y + patch_l - truncated_length];
+
+% Bottom-right truncated triangle (near bottom-right corner of patch)  
+truncatedBottomRight_x = [antenna_x + patch_w, antenna_x + patch_w, antenna_x + patch_w - truncated_length];
+truncatedBottomRight_y = [antenna_y, antenna_y + truncated_length, antenna_y];
+
+% Radiation box dimensions (centered around entire structure)
+lambda_0 = (3*(10^8) / freq) * 1000;  % Free-space wavelength in mm
+air_margin = 48.0;  % mm
+
+% Radiation box starts before origin and extends beyond ground plane
+rad_x_origin = -air_margin;  % -48 mm
+rad_y_origin = -air_margin;  % -48 mm
+rad_x_size = ground_w + 2*air_margin;  % 90 + 96 = 186 mm
+rad_y_size = ground_l + 2*air_margin;  % 90 + 96 = 186 mm
+rad_z_size = 49.67;  % mm
+
+%%%%% End Of Antenna design calculation %%%%%
+%%%%% Writing the python file %%%%%
+
+
+
+
+% Define the file name
+fileName = "D:\ANSYS_FYP_DATA\Antenna_design.py";
+
+% Write the content to the Python file
+fid = fopen(fileName, 'w');
+if fid == -1
+    error('Could not create Python file.');
+end
+
+fprintf(fid,"# ----------------------------------------------\n");
+fprintf(fid,"# Script Recorded by Ansys Electronics Desktop Student Version 2024.2.0\n");
+fprintf(fid,"# 20:56:28  Jun 24, 2025\n");
+fprintf(fid,"# ----------------------------------------------\n");
+fprintf(fid,"import ScriptEnv\n");
+fprintf(fid,"ScriptEnv.Initialize('Ansoft.ElectronicsDesktop')\n");
+fprintf(fid,"oDesktop.RestoreWindow()\n");
+fprintf(fid,"oProject = oDesktop.NewProject()\n");
+fprintf(fid,"oProject.InsertDesign('HFSS', 'HFSSDesign1', 'HFSS Terminal Network', '')\n");
+fprintf(fid,"oDesign = oProject.SetActiveDesign('HFSSDesign1')\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.CreateBox(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:BoxParameters',\n");
+fprintf(fid,"		'XPosition:='		, '0mm',\n");
+fprintf(fid,"		'YPosition:='		, '0mm',\n");
+fprintf(fid,"		'ZPosition:='		, '0mm',\n");
+fprintf(fid,"		'XSize:='		, '" + num2str(ground_w) + "mm',\n");
+fprintf(fid,"		'YSize:='		, '" + num2str(ground_l) + "mm',\n");
+fprintf(fid,"		'ZSize:='		, '" + num2str(ground_h) + "mm'\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Attributes',\n");
+fprintf(fid,"		'Name:='		, 'Box1',\n");
+fprintf(fid,"		'Flags:='		, '',\n");
+fprintf(fid,"		'Color:='		, '(143 175 143)',\n");
+fprintf(fid,"		'Transparency:='	, 0,\n");
+fprintf(fid,"		'PartCoordinateSystem:=', 'Global',\n");
+fprintf(fid,"		'UDMId:='		, '',\n");
+fprintf(fid,"		'MaterialValue:='	, '\\'vacuum\\'',\n");
+fprintf(fid,"		'SurfaceMaterialValue:=', '\\'\\'',\n");
+fprintf(fid,"		'SolveInside:='		, True,\n");
+fprintf(fid,"		'ShellElement:='	, False,\n");
+fprintf(fid,"		'ShellElementThickness:=', '0mm',\n");
+fprintf(fid,"		'ReferenceTemperature:=', '20cel',\n");
+fprintf(fid,"		'IsMaterialEditable:='	, True,\n");
+fprintf(fid,"		'IsSurfaceMaterialEditable:=', True,\n");
+fprintf(fid,"		'UseMaterialAppearance:=', False,\n");
+fprintf(fid,"		'IsLightweight:='	, False\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.ChangeProperty(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:AllTabs',\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:Geometry3DAttributeTab',\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PropServers', \n");
+fprintf(fid,"				'Box1'\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:ChangedProps',\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Material',\n");
+fprintf(fid,"					'Value:='		, '\\'copper\\''\n");
+fprintf(fid,"				],\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Display Wireframe',\n");
+fprintf(fid,"					'Value:='		, True\n");
+fprintf(fid,"				],\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Name',\n");
+fprintf(fid,"					'Value:='		, 'Ground'\n");
+fprintf(fid,"				]\n");
+fprintf(fid,"			]\n");
+fprintf(fid,"		]\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.CreateBox(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:BoxParameters',\n");
+fprintf(fid,"		'XPosition:='		, '0mm',\n");
+fprintf(fid,"		'YPosition:='		, '0mm',\n");
+fprintf(fid,"		'ZPosition:='		, '0.035mm',\n");
+fprintf(fid,"		'XSize:='		, '" + num2str(ground_w) + "mm',\n");
+fprintf(fid,"		'YSize:='		, '" + num2str(ground_l) + "mm',\n");
+fprintf(fid,"		'ZSize:='		, '" + num2str(subs_height) + "mm'\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Attributes',\n");
+fprintf(fid,"		'Name:='		, 'Box1',\n");
+fprintf(fid,"		'Flags:='		, '',\n");
+fprintf(fid,"		'Color:='		, '(143 175 143)',\n");
+fprintf(fid,"		'Transparency:='	, 0,\n");
+fprintf(fid,"		'PartCoordinateSystem:=', 'Global',\n");
+fprintf(fid,"		'UDMId:='		, '',\n");
+fprintf(fid,"		'MaterialValue:='	, '\\'vacuum\\'',\n");
+fprintf(fid,"		'SurfaceMaterialValue:=', '\\'\\'',\n");
+fprintf(fid,"		'SolveInside:='		, True,\n");
+fprintf(fid,"		'ShellElement:='	, False,\n");
+fprintf(fid,"		'ShellElementThickness:=', '0mm',\n");
+fprintf(fid,"		'ReferenceTemperature:=', '20cel',\n");
+fprintf(fid,"		'IsMaterialEditable:='	, True,\n");
+fprintf(fid,"		'IsSurfaceMaterialEditable:=', True,\n");
+fprintf(fid,"		'UseMaterialAppearance:=', False,\n");
+fprintf(fid,"		'IsLightweight:='	, False\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.ChangeProperty(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:AllTabs',\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:Geometry3DAttributeTab',\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PropServers', \n");
+fprintf(fid,"				'Box1'\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:ChangedProps',\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Name',\n");
+fprintf(fid,"					'Value:='		, 'Substrate'\n");
+fprintf(fid,"				],\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Material',\n");
+fprintf(fid,"					'Value:='		, '\\'FR4_epoxy\\''\n");
+fprintf(fid,"				]\n");
+fprintf(fid,"			]\n");
+fprintf(fid,"		]\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.CreateBox(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:BoxParameters',\n");
+fprintf(fid,"		'XPosition:='		, '" + num2str(antenna_x) + "mm',\n");
+fprintf(fid,"		'YPosition:='		, '" + num2str(antenna_y) + "mm',\n");
+fprintf(fid,"		'ZPosition:='		, '" + num2str(subs_height+ground_h) + "mm',\n");
+fprintf(fid,"		'XSize:='		, '" + num2str(patch_w) + "mm',\n");
+fprintf(fid,"		'YSize:='		, '" + num2str(patch_l) + "mm',\n");
+fprintf(fid,"		'ZSize:='		, '" + num2str(ground_h) + "mm'\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Attributes',\n");
+fprintf(fid,"		'Name:='		, 'Box1',\n");
+fprintf(fid,"		'Flags:='		, '',\n");
+fprintf(fid,"		'Color:='		, '(143 175 143)',\n");
+fprintf(fid,"		'Transparency:='	, 0,\n");
+fprintf(fid,"		'PartCoordinateSystem:=', 'Global',\n");
+fprintf(fid,"		'UDMId:='		, '',\n");
+fprintf(fid,"		'MaterialValue:='	, '\\'vacuum\\'',\n");
+fprintf(fid,"		'SurfaceMaterialValue:=', '\\'\\'',\n");
+fprintf(fid,"		'SolveInside:='		, True,\n");
+fprintf(fid,"		'ShellElement:='	, False,\n");
+fprintf(fid,"		'ShellElementThickness:=', '0mm',\n");
+fprintf(fid,"		'ReferenceTemperature:=', '20cel',\n");
+fprintf(fid,"		'IsMaterialEditable:='	, True,\n");
+fprintf(fid,"		'IsSurfaceMaterialEditable:=', True,\n");
+fprintf(fid,"		'UseMaterialAppearance:=', False,\n");
+fprintf(fid,"		'IsLightweight:='	, False\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.ChangeProperty(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:AllTabs',\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:Geometry3DAttributeTab',\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PropServers', \n");
+fprintf(fid,"				'Box1'\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:ChangedProps',\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Name',\n");
+fprintf(fid,"					'Value:='		, 'Patch'\n");
+fprintf(fid,"				],\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Material',\n");
+fprintf(fid,"					'Value:='		, '\\'copper\\''\n");
+fprintf(fid,"				]\n");
+fprintf(fid,"			]\n");
+fprintf(fid,"		]\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.CreateCylinder(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:CylinderParameters',\n");
+fprintf(fid,"		'XCenter:='		, '" + num2str(feed_x) + "mm',\n");
+fprintf(fid,"		'YCenter:='		, '" + num2str(feed_y) + "mm',\n");
+fprintf(fid,"		'ZCenter:='		, '0mm',\n");
+fprintf(fid,"		'Radius:='		, '" + num2str(feed_rad) + "mm',\n");
+fprintf(fid,"		'Height:='		, '" + num2str(feed_inner_h) + "mm',\n");
+fprintf(fid,"		'WhichAxis:='		, 'Z',\n");
+fprintf(fid,"		'NumSides:='		, '0'\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Attributes',\n");
+fprintf(fid,"		'Name:='		, 'Cylinder1',\n");
+fprintf(fid,"		'Flags:='		, '',\n");
+fprintf(fid,"		'Color:='		, '(143 175 143)',\n");
+fprintf(fid,"		'Transparency:='	, 0,\n");
+fprintf(fid,"		'PartCoordinateSystem:=', 'Global',\n");
+fprintf(fid,"		'UDMId:='		, '',\n");
+fprintf(fid,"		'MaterialValue:='	, '\\'vacuum\\'',\n");
+fprintf(fid,"		'SurfaceMaterialValue:=', '\\'\\'',\n");
+fprintf(fid,"		'SolveInside:='		, True,\n");
+fprintf(fid,"		'ShellElement:='	, False,\n");
+fprintf(fid,"		'ShellElementThickness:=', '0mm',\n");
+fprintf(fid,"		'ReferenceTemperature:=', '20cel',\n");
+fprintf(fid,"		'IsMaterialEditable:='	, True,\n");
+fprintf(fid,"		'IsSurfaceMaterialEditable:=', True,\n");
+fprintf(fid,"		'UseMaterialAppearance:=', False,\n");
+fprintf(fid,"		'IsLightweight:='	, False\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.ChangeProperty(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:AllTabs',\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:Geometry3DAttributeTab',\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PropServers', \n");
+fprintf(fid,"				'Cylinder1'\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:ChangedProps',\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Name',\n");
+fprintf(fid,"					'Value:='		, 'Hole'\n");
+fprintf(fid,"				]\n");
+fprintf(fid,"			]\n");
+fprintf(fid,"		]\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.Subtract(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Selections',\n");
+fprintf(fid,"		'Blank Parts:='		, 'Ground',\n");
+fprintf(fid,"		'Tool Parts:='		, 'Hole'\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:SubtractParameters',\n");
+fprintf(fid,"		'KeepOriginals:='	, False,\n");
+fprintf(fid,"		'TurnOnNBodyBoolean:='	, True\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor.CreateCylinder(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:CylinderParameters',\n");
+fprintf(fid,"		'XCenter:='		, '" + num2str(feed_x) + "mm',\n");
+fprintf(fid,"		'YCenter:='		, '" + num2str(feed_y) + "mm',\n");
+fprintf(fid,"		'ZCenter:='		, '0mm',\n");
+fprintf(fid,"		'Radius:='		, '" + num2str(feed_rad/2) + "mm',\n");
+fprintf(fid,"		'Height:='		, '" + num2str(ground_h+subs_height) + "mm',\n");
+fprintf(fid,"		'WhichAxis:='		, 'Z',\n");
+fprintf(fid,"		'NumSides:='		, '0'\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Attributes',\n");
+fprintf(fid,"		'Name:='		, 'Cylinder1',\n");
+fprintf(fid,"		'Flags:='		, '',\n");
+fprintf(fid,"		'Color:='		, '(143 175 143)',\n");
+fprintf(fid,"		'Transparency:='	, 0,\n");
+fprintf(fid,"		'PartCoordinateSystem:=', 'Global',\n");
+fprintf(fid,"		'UDMId:='		, '',\n");
+fprintf(fid,"		'MaterialValue:='	, '\\'vacuum\\'',\n");
+fprintf(fid,"		'SurfaceMaterialValue:=', '\\'\\'',\n");
+fprintf(fid,"		'SolveInside:='		, True,\n");
+fprintf(fid,"		'ShellElement:='	, False,\n");
+fprintf(fid,"		'ShellElementThickness:=', '0mm',\n");
+fprintf(fid,"		'ReferenceTemperature:=', '20cel',\n");
+fprintf(fid,"		'IsMaterialEditable:='	, True,\n");
+fprintf(fid,"		'IsSurfaceMaterialEditable:=', True,\n");
+fprintf(fid,"		'UseMaterialAppearance:=', False,\n");
+fprintf(fid,"		'IsLightweight:='	, False\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.ChangeProperty(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:AllTabs',\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:Geometry3DAttributeTab',\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PropServers', \n");
+fprintf(fid,"				'Cylinder1'\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:ChangedProps',\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Name',\n");
+fprintf(fid,"					'Value:='		, 'Upper_Pin'\n");
+fprintf(fid,"				],\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Material',\n");
+fprintf(fid,"					'Value:='		, '\\'pec\\''\n");
+fprintf(fid,"				]\n");
+fprintf(fid,"			]\n");
+fprintf(fid,"		]\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.CreateCylinder(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:CylinderParameters',\n");
+fprintf(fid,"		'XCenter:='		, '" + num2str(feed_x) + "mm',\n");
+fprintf(fid,"		'YCenter:='		, '" + num2str(feed_y) + "mm',\n");
+fprintf(fid,"		'ZCenter:='		, '0mm',\n");
+fprintf(fid,"		'Radius:='		, '" + num2str(feed_rad/2) + "mm',\n");
+fprintf(fid,"		'Height:='		, '" + num2str(feed_lower_h) + "mm',\n");
+fprintf(fid,"		'WhichAxis:='		, 'Z',\n");
+fprintf(fid,"		'NumSides:='		, '0'\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Attributes',\n");
+fprintf(fid,"		'Name:='		, 'Cylinder1',\n");
+fprintf(fid,"		'Flags:='		, '',\n");
+fprintf(fid,"		'Color:='		, '(143 175 143)',\n");
+fprintf(fid,"		'Transparency:='	, 0,\n");
+fprintf(fid,"		'PartCoordinateSystem:=', 'Global',\n");
+fprintf(fid,"		'UDMId:='		, '',\n");
+fprintf(fid,"		'MaterialValue:='	, '\\'vacuum\\'',\n");
+fprintf(fid,"		'SurfaceMaterialValue:=', '\\'\\'',\n");
+fprintf(fid,"		'SolveInside:='		, True,\n");
+fprintf(fid,"		'ShellElement:='	, False,\n");
+fprintf(fid,"		'ShellElementThickness:=', '0mm',\n");
+fprintf(fid,"		'ReferenceTemperature:=', '20cel',\n");
+fprintf(fid,"		'IsMaterialEditable:='	, True,\n");
+fprintf(fid,"		'IsSurfaceMaterialEditable:=', True,\n");
+fprintf(fid,"		'UseMaterialAppearance:=', False,\n");
+fprintf(fid,"		'IsLightweight:='	, False\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.ChangeProperty(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:AllTabs',\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:Geometry3DAttributeTab',\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PropServers', \n");
+fprintf(fid,"				'Cylinder1'\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:ChangedProps',\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Name',\n");
+fprintf(fid,"					'Value:='		, 'Lower_Pin'\n");
+fprintf(fid,"				],\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Material',\n");
+fprintf(fid,"					'Value:='		, '\\'pec\\''\n");
+fprintf(fid,"				]\n");
+fprintf(fid,"			]\n");
+fprintf(fid,"		]\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.CreateCylinder(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:CylinderParameters',\n");
+fprintf(fid,"		'XCenter:='		, '" + num2str(feed_x) + "mm',\n");
+fprintf(fid,"		'YCenter:='		, '" + num2str(feed_y) + "mm',\n");
+fprintf(fid,"		'ZCenter:='		, '0mm',\n");
+fprintf(fid,"		'Radius:='		, '" + num2str(feed_rad) + "mm',\n");
+fprintf(fid,"		'Height:='		, '" + num2str(feed_lower_h) + "mm',\n");
+fprintf(fid,"		'WhichAxis:='		, 'Z',\n");
+fprintf(fid,"		'NumSides:='		, '0'\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Attributes',\n");
+fprintf(fid,"		'Name:='		, 'Cylinder1',\n");
+fprintf(fid,"		'Flags:='		, '',\n");
+fprintf(fid,"		'Color:='		, '(143 175 143)',\n");
+fprintf(fid,"		'Transparency:='	, 0,\n");
+fprintf(fid,"		'PartCoordinateSystem:=', 'Global',\n");
+fprintf(fid,"		'UDMId:='		, '',\n");
+fprintf(fid,"		'MaterialValue:='	, '\\'vacuum\\'',\n");
+fprintf(fid,"		'SurfaceMaterialValue:=', '\\'\\'',\n");
+fprintf(fid,"		'SolveInside:='		, True,\n");
+fprintf(fid,"		'ShellElement:='	, False,\n");
+fprintf(fid,"		'ShellElementThickness:=', '0mm',\n");
+fprintf(fid,"		'ReferenceTemperature:=', '20cel',\n");
+fprintf(fid,"		'IsMaterialEditable:='	, True,\n");
+fprintf(fid,"		'IsSurfaceMaterialEditable:=', True,\n");
+fprintf(fid,"		'UseMaterialAppearance:=', False,\n");
+fprintf(fid,"		'IsLightweight:='	, False\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.ChangeProperty(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:AllTabs',\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:Geometry3DAttributeTab',\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PropServers', \n");
+fprintf(fid,"				'Cylinder1'\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:ChangedProps',\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Name',\n");
+fprintf(fid,"					'Value:='		, 'Coax_Dielectric'\n");
+fprintf(fid,"				],\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Material',\n");
+fprintf(fid,"					'Value:='		, '\\'glass_PTFEreinf\\''\n");
+fprintf(fid,"				]\n");
+fprintf(fid,"			]\n");
+fprintf(fid,"		]\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.CreateCircle(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:CircleParameters',\n");
+fprintf(fid,"		'IsCovered:='		, True,\n");
+fprintf(fid,"		'XCenter:='		, '" + num2str(feed_x) + "mm',\n");
+fprintf(fid,"		'YCenter:='		, '" + num2str(feed_y) + "mm',\n");
+fprintf(fid,"		'ZCenter:='		, '" + num2str(feed_lower_h) + "mm',\n");
+fprintf(fid,"		'Radius:='		, '" + num2str(feed_rad) + "mm',\n");
+fprintf(fid,"		'WhichAxis:='		, 'Z',\n");
+fprintf(fid,"		'NumSegments:='		, '0'\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Attributes',\n");
+fprintf(fid,"		'Name:='		, 'Circle1',\n");
+fprintf(fid,"		'Flags:='		, '',\n");
+fprintf(fid,"		'Color:='		, '(143 175 143)',\n");
+fprintf(fid,"		'Transparency:='	, 0,\n");
+fprintf(fid,"		'PartCoordinateSystem:=', 'Global',\n");
+fprintf(fid,"		'UDMId:='		, '',\n");
+fprintf(fid,"		'MaterialValue:='	, '\\'vacuum\\'',\n");
+fprintf(fid,"		'SurfaceMaterialValue:=', '\\'\\'',\n");
+fprintf(fid,"		'SolveInside:='		, True,\n");
+fprintf(fid,"		'ShellElement:='	, False,\n");
+fprintf(fid,"		'ShellElementThickness:=', '0mm',\n");
+fprintf(fid,"		'ReferenceTemperature:=', '20cel',\n");
+fprintf(fid,"		'IsMaterialEditable:='	, True,\n");
+fprintf(fid,"		'IsSurfaceMaterialEditable:=', True,\n");
+fprintf(fid,"		'UseMaterialAppearance:=', False,\n");
+fprintf(fid,"		'IsLightweight:='	, False\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.ChangeProperty(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:AllTabs',\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:Geometry3DAttributeTab',\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PropServers', \n");
+fprintf(fid,"				'Circle1'\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:ChangedProps',\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Name',\n");
+fprintf(fid,"					'Value:='		, 'Wave_port'\n");
+fprintf(fid,"				]\n");
+fprintf(fid,"			]\n");
+fprintf(fid,"		]\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oModule = oDesign.GetModule('BoundarySetup')\n");
+fprintf(fid,"oModule.AssignWavePort(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:1',\n");
+fprintf(fid,"		'Objects:='		, ['Wave_port'],\n");
+fprintf(fid,"		'WavePortType:='	, 'Modal',\n");
+fprintf(fid,"		'NumModes:='		, 1,\n");
+fprintf(fid,"		'UseLineModeAlignment:=', False,\n");
+fprintf(fid,"		'DoDeembed:='		, False,\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:Modes',\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:Mode1',\n");
+fprintf(fid,"				'ModeNum:='		, 1,\n");
+fprintf(fid,"				'UseIntLine:='		, False,\n");
+fprintf(fid,"				'CharImp:='		, 'Zpi'\n");
+fprintf(fid,"			]\n");
+fprintf(fid,"		],\n");
+fprintf(fid,"		'UseAnalyticAlignment:=', False,\n");
+fprintf(fid,"		'ShowReporterFilter:='	, False,\n");
+fprintf(fid,"		'ReporterFilter:='	, [True]\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.CreateBox(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:BoxParameters',\n");
+fprintf(fid,"		'XPosition:='		, '" + num2str(rad_x_origin) + "mm',\n");
+fprintf(fid,"		'YPosition:='		, '" + num2str(rad_y_origin) + "mm',\n");
+fprintf(fid,"		'ZPosition:='		, '0mm',\n");
+fprintf(fid,"		'XSize:='		, '" + num2str(rad_x_size) + "mm',\n");
+fprintf(fid,"		'YSize:='		, '" + num2str(rad_y_size) + "mm',\n");
+fprintf(fid,"		'ZSize:='		, '" + num2str(rad_z_size) + "mm'\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Attributes',\n");
+fprintf(fid,"		'Name:='		, 'Box1',\n");
+fprintf(fid,"		'Flags:='		, '',\n");
+fprintf(fid,"		'Color:='		, '(143 175 143)',\n");
+fprintf(fid,"		'Transparency:='	, 0,\n");
+fprintf(fid,"		'PartCoordinateSystem:=', 'Global',\n");
+fprintf(fid,"		'UDMId:='		, '',\n");
+fprintf(fid,"		'MaterialValue:='	, '\\'vacuum\\'',\n");
+fprintf(fid,"		'SurfaceMaterialValue:=', '\\'\\'',\n");
+fprintf(fid,"		'SolveInside:='		, True,\n");
+fprintf(fid,"		'ShellElement:='	, False,\n");
+fprintf(fid,"		'ShellElementThickness:=', '0mm',\n");
+fprintf(fid,"		'ReferenceTemperature:=', '20cel',\n");
+fprintf(fid,"		'IsMaterialEditable:='	, True,\n");
+fprintf(fid,"		'IsSurfaceMaterialEditable:=', True,\n");
+fprintf(fid,"		'UseMaterialAppearance:=', False,\n");
+fprintf(fid,"		'IsLightweight:='	, False\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.ChangeProperty(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:AllTabs',\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:Geometry3DAttributeTab',\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PropServers', \n");
+fprintf(fid,"				'Box1'\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:ChangedProps',\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Name',\n");
+fprintf(fid,"					'Value:='		, 'Air_Box'\n");
+fprintf(fid,"				],\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Material',\n");
+fprintf(fid,"					'Value:='		, '\\'air\\''\n");
+fprintf(fid,"				],\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Transparent',\n");
+fprintf(fid,"					'Value:='		, 0.8\n");
+fprintf(fid,"				]\n");
+fprintf(fid,"			]\n");
+fprintf(fid,"		]\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oModule.AssignRadiation(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Rad1',\n");
+fprintf(fid,"		'Faces:='		, [139,142,141,140,137]\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oModule = oDesign.GetModule('AnalysisSetup')\n");
+fprintf(fid,"oModule.InsertSetup('HfssDriven', \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Setup1',\n");
+fprintf(fid,"		'SolveType:='		, 'Single',\n");
+fprintf(fid,"		'Frequency:='		, '1.57542GHz',\n");
+fprintf(fid,"		'MaxDeltaS:='		, 0.02,\n");
+fprintf(fid,"		'UseMatrixConv:='	, False,\n");
+fprintf(fid,"		'MaximumPasses:='	, 15,\n");
+fprintf(fid,"		'MinimumPasses:='	, 1,\n");
+fprintf(fid,"		'MinimumConvergedPasses:=', 1,\n");
+fprintf(fid,"		'PercentRefinement:='	, 30,\n");
+fprintf(fid,"		'IsEnabled:='		, True,\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:MeshLink',\n");
+fprintf(fid,"			'ImportMesh:='		, False\n");
+fprintf(fid,"		],\n");
+fprintf(fid,"		'BasisOrder:='		, 1,\n");
+fprintf(fid,"		'DoLambdaRefine:='	, True,\n");
+fprintf(fid,"		'DoMaterialLambda:='	, True,\n");
+fprintf(fid,"		'SetLambdaTarget:='	, False,\n");
+fprintf(fid,"		'Target:='		, 0.3333,\n");
+fprintf(fid,"		'UseMaxTetIncrease:='	, False,\n");
+fprintf(fid,"		'PortAccuracy:='	, 2,\n");
+fprintf(fid,"		'UseABCOnPort:='	, False,\n");
+fprintf(fid,"		'SetPortMinMaxTri:='	, False,\n");
+fprintf(fid,"		'DrivenSolverType:='	, 'Direct Solver',\n");
+fprintf(fid,"		'EnhancedLowFreqAccuracy:=', False,\n");
+fprintf(fid,"		'SaveRadFieldsOnly:='	, False,\n");
+fprintf(fid,"		'SaveAnyFields:='	, True,\n");
+fprintf(fid,"		'IESolverType:='	, 'Auto',\n");
+fprintf(fid,"		'LambdaTargetForIESolver:=', 0.15,\n");
+fprintf(fid,"		'UseDefaultLambdaTgtForIESolver:=', True,\n");
+fprintf(fid,"		'IE Solver Accuracy:='	, 'Balanced',\n");
+fprintf(fid,"		'InfiniteSphereSetup:='	, '',\n");
+fprintf(fid,"		'MaxPass:='		, 10,\n");
+fprintf(fid,"		'MinPass:='		, 1,\n");
+fprintf(fid,"		'MinConvPass:='		, 1,\n");
+fprintf(fid,"		'PerError:='		, 1,\n");
+fprintf(fid,"		'PerRefine:='		, 30\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oModule.InsertFrequencySweep('Setup1', \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Sweep',\n");
+fprintf(fid,"		'IsEnabled:='		, True,\n");
+fprintf(fid,"		'RangeType:='		, 'LinearCount',\n");
+fprintf(fid,"		'RangeStart:='		, '1.4GHz',\n");
+fprintf(fid,"		'RangeEnd:='		, '1.7GHz',\n");
+fprintf(fid,"		'RangeCount:='		, 2001,\n");
+fprintf(fid,"		'Type:='		, 'Fast',\n");
+fprintf(fid,"		'SaveFields:='		, True,\n");
+fprintf(fid,"		'SaveRadFields:='	, False,\n");
+fprintf(fid,"		'GenerateFieldsForAllFreqs:=', False\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.Copy(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Selections',\n");
+fprintf(fid,"		'Selections:='		, 'Upper_Pin'\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor.Paste()\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.ChangeProperty(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:AllTabs',\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:Geometry3DAttributeTab',\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PropServers', \n");
+fprintf(fid,"				'Upper_Pin1'\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:ChangedProps',\n");
+fprintf(fid,"				[\n");
+fprintf(fid,"					'NAME:Material',\n");
+fprintf(fid,"					'Value:='		, '\\'vacuum\\''\n");
+fprintf(fid,"				]\n");
+fprintf(fid,"			]\n");
+fprintf(fid,"		]\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.Subtract(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Selections',\n");
+fprintf(fid,"		'Blank Parts:='		, 'Substrate',\n");
+fprintf(fid,"		'Tool Parts:='		, 'Upper_Pin1'\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:SubtractParameters',\n");
+fprintf(fid,"		'KeepOriginals:='	, False,\n");
+fprintf(fid,"		'TurnOnNBodyBoolean:='	, True\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.CreatePolyline(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:PolylineParameters',\n");
+fprintf(fid,"		'IsPolylineCovered:='	, True,\n");
+fprintf(fid,"		'IsPolylineClosed:='	, True,\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:PolylinePoints',\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PLPoint',\n");
+fprintf(fid,"				'X:='			, '" + num2str(truncatedTopLeft_x(1)) + "mm',\n");
+fprintf(fid,"				'Y:='			, '" + num2str(truncatedTopLeft_y(1)) + "mm',\n");
+fprintf(fid,"				'Z:='			, '" + num2str(ground_h+subs_height) + "mm'\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PLPoint',\n");
+fprintf(fid,"				'X:='			, '" + num2str(truncatedTopLeft_x(2)) + "mm',\n");
+fprintf(fid,"				'Y:='			, '" + num2str(truncatedTopLeft_y(2)) + "mm',\n");
+fprintf(fid,"				'Z:='			, '" + num2str(ground_h+subs_height) + "mm'\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PLPoint',\n");
+fprintf(fid,"				'X:='			, '" + num2str(truncatedTopLeft_x(3)) + "mm',\n");
+fprintf(fid,"				'Y:='			, '" + num2str(truncatedTopLeft_y(3)) + "mm',\n");
+fprintf(fid,"				'Z:='			, '" + num2str(ground_h+subs_height) + "mm'\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PLPoint',\n");
+fprintf(fid,"				'X:='			, '" + num2str(truncatedTopLeft_x(1)) + "mm',\n");
+fprintf(fid,"				'Y:='			, '" + num2str(truncatedTopLeft_y(1)) + "mm',\n");
+fprintf(fid,"				'Z:='			, '" + num2str(ground_h+subs_height) + "mm'\n");
+fprintf(fid,"			]\n");
+fprintf(fid,"		],\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:PolylineSegments',\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PLSegment',\n");
+fprintf(fid,"				'SegmentType:='		, 'Line',\n");
+fprintf(fid,"				'StartIndex:='		, 0,\n");
+fprintf(fid,"				'NoOfPoints:='		, 2\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PLSegment',\n");
+fprintf(fid,"				'SegmentType:='		, 'Line',\n");
+fprintf(fid,"				'StartIndex:='		, 1,\n");
+fprintf(fid,"				'NoOfPoints:='		, 2\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PLSegment',\n");
+fprintf(fid,"				'SegmentType:='		, 'Line',\n");
+fprintf(fid,"				'StartIndex:='		, 2,\n");
+fprintf(fid,"				'NoOfPoints:='		, 2\n");
+fprintf(fid,"			]\n");
+fprintf(fid,"		],\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:PolylineXSection',\n");
+fprintf(fid,"			'XSectionType:='	, 'None',\n");
+fprintf(fid,"			'XSectionOrient:='	, 'Auto',\n");
+fprintf(fid,"			'XSectionWidth:='	, '0mm',\n");
+fprintf(fid,"			'XSectionTopWidth:='	, '0mm',\n");
+fprintf(fid,"			'XSectionHeight:='	, '0mm',\n");
+fprintf(fid,"			'XSectionNumSegments:='	, '0',\n");
+fprintf(fid,"			'XSectionBendType:='	, 'Corner'\n");
+fprintf(fid,"		]\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Attributes',\n");
+fprintf(fid,"		'Name:='		, 'Polyline1',\n");
+fprintf(fid,"		'Flags:='		, 'NonModel#',\n");
+fprintf(fid,"		'Color:='		, '(143 175 143)',\n");
+fprintf(fid,"		'Transparency:='	, 0,\n");
+fprintf(fid,"		'PartCoordinateSystem:=', 'Global',\n");
+fprintf(fid,"		'UDMId:='		, '',\n");
+fprintf(fid,"		'MaterialValue:='	, '\\'vacuum\\'',\n");
+fprintf(fid,"		'SurfaceMaterialValue:=', '\\'\\'',\n");
+fprintf(fid,"		'SolveInside:='		, True,\n");
+fprintf(fid,"		'ShellElement:='	, False,\n");
+fprintf(fid,"		'ShellElementThickness:=', '0mm',\n");
+fprintf(fid,"		'ReferenceTemperature:=', '20cel',\n");
+fprintf(fid,"		'IsMaterialEditable:='	, True,\n");
+fprintf(fid,"		'UseMaterialAppearance:=', False,\n");
+fprintf(fid,"		'IsLightweight:='	, False\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor.CreatePolyline(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:PolylineParameters',\n");
+fprintf(fid,"		'IsPolylineCovered:='	, True,\n");
+fprintf(fid,"		'IsPolylineClosed:='	, True,\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:PolylinePoints',\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PLPoint',\n");
+fprintf(fid,"				'X:='			, '" + num2str(truncatedBottomRight_x(1)) + "mm',\n");
+fprintf(fid,"				'Y:='			, '" + num2str(truncatedBottomRight_y(1)) + "mm',\n");
+fprintf(fid,"				'Z:='			, '" + num2str(ground_h+subs_height) + "mm'\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PLPoint',\n");
+fprintf(fid,"				'X:='			, '" + num2str(truncatedBottomRight_x(2)) + "mm',\n");
+fprintf(fid,"				'Y:='			, '" + num2str(truncatedBottomRight_y(2)) + "mm',\n");
+fprintf(fid,"				'Z:='			, '" + num2str(ground_h+subs_height) + "mm'\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PLPoint',\n");
+fprintf(fid,"				'X:='			, '" + num2str(truncatedBottomRight_x(3)) + "mm',\n");
+fprintf(fid,"				'Y:='			, '" + num2str(truncatedBottomRight_y(3)) + "mm',\n");
+fprintf(fid,"				'Z:='			, '" + num2str(ground_h+subs_height) + "mm'\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PLPoint',\n");
+fprintf(fid,"				'X:='			, '" + num2str(truncatedBottomRight_x(1)) + "mm',\n");
+fprintf(fid,"				'Y:='			, '" + num2str(truncatedBottomRight_y(1)) + "mm',\n");
+fprintf(fid,"				'Z:='			, '" + num2str(ground_h+subs_height) + "mm'\n");
+fprintf(fid,"			]\n");
+fprintf(fid,"		],\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:PolylineSegments',\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PLSegment',\n");
+fprintf(fid,"				'SegmentType:='		, 'Line',\n");
+fprintf(fid,"				'StartIndex:='		, 0,\n");
+fprintf(fid,"				'NoOfPoints:='		, 2\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PLSegment',\n");
+fprintf(fid,"				'SegmentType:='		, 'Line',\n");
+fprintf(fid,"				'StartIndex:='		, 1,\n");
+fprintf(fid,"				'NoOfPoints:='		, 2\n");
+fprintf(fid,"			],\n");
+fprintf(fid,"			[\n");
+fprintf(fid,"				'NAME:PLSegment',\n");
+fprintf(fid,"				'SegmentType:='		, 'Line',\n");
+fprintf(fid,"				'StartIndex:='		, 2,\n");
+fprintf(fid,"				'NoOfPoints:='		, 2\n");
+fprintf(fid,"			]\n");
+fprintf(fid,"		],\n");
+fprintf(fid,"		[\n");
+fprintf(fid,"			'NAME:PolylineXSection',\n");
+fprintf(fid,"			'XSectionType:='	, 'None',\n");
+fprintf(fid,"			'XSectionOrient:='	, 'Auto',\n");
+fprintf(fid,"			'XSectionWidth:='	, '0mm',\n");
+fprintf(fid,"			'XSectionTopWidth:='	, '0mm',\n");
+fprintf(fid,"			'XSectionHeight:='	, '0mm',\n");
+fprintf(fid,"			'XSectionNumSegments:='	, '0',\n");
+fprintf(fid,"			'XSectionBendType:='	, 'Corner'\n");
+fprintf(fid,"		]\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Attributes',\n");
+fprintf(fid,"		'Name:='		, 'Polyline2',\n");
+fprintf(fid,"		'Flags:='		, 'NonModel#',\n");
+fprintf(fid,"		'Color:='		, '(143 175 143)',\n");
+fprintf(fid,"		'Transparency:='	, 0,\n");
+fprintf(fid,"		'PartCoordinateSystem:=', 'Global',\n");
+fprintf(fid,"		'UDMId:='		, '',\n");
+fprintf(fid,"		'MaterialValue:='	, '\\'vacuum\\'',\n");
+fprintf(fid,"		'SurfaceMaterialValue:=', '\\'\\'',\n");
+fprintf(fid,"		'SolveInside:='		, True,\n");
+fprintf(fid,"		'ShellElement:='	, False,\n");
+fprintf(fid,"		'ShellElementThickness:=', '0mm',\n");
+fprintf(fid,"		'ReferenceTemperature:=', '20cel',\n");
+fprintf(fid,"		'IsMaterialEditable:='	, True,\n");
+fprintf(fid,"		'UseMaterialAppearance:=', False,\n");
+fprintf(fid,"		'IsLightweight:='	, False\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor.SweepAlongVector(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Selections',\n");
+fprintf(fid,"		'Selections:='		, 'Polyline1,Polyline2',\n");
+fprintf(fid,"		'NewPartsModelFlag:='	, 'NonModel'\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:VectorSweepParameters',\n");
+fprintf(fid,"		'DraftAngle:='		, '0deg',\n");
+fprintf(fid,"		'DraftType:='		, 'Round',\n");
+fprintf(fid,"		'CheckFaceFaceIntersection:=', False,\n");
+fprintf(fid,"		'ClearAllIDs:='		, False,\n");
+fprintf(fid,"		'SweepVectorX:='	, '0mm',\n");
+fprintf(fid,"		'SweepVectorY:='	, '0mm',\n");
+fprintf(fid,"		'SweepVectorZ:='	, '" + num2str(patch_h) + "mm'\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oEditor = oDesign.SetActiveEditor('3D Modeler')\n");
+fprintf(fid,"oEditor.Subtract(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Selections',\n");
+fprintf(fid,"		'Blank Parts:='		, 'Patch',\n");
+fprintf(fid,"		'Tool Parts:='		, 'Polyline1,Polyline2'\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:SubtractParameters',\n");
+fprintf(fid,"		'KeepOriginals:='	, False,\n");
+fprintf(fid,"		'TurnOnNBodyBoolean:='	, True\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oModule = oDesign.GetModule('RadField')\n");
+fprintf(fid,"oModule.InsertInfiniteSphereSetup(\n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'NAME:Infinite Sphere1',\n");
+fprintf(fid,"		'UseCustomRadiationSurface:=', False,\n");
+fprintf(fid,"		'CSDefinition:='	, 'Theta-Phi',\n");
+fprintf(fid,"		'Polarization:='	, 'Linear',\n");
+fprintf(fid,"		'ThetaStart:='		, '-180deg',\n");
+fprintf(fid,"		'ThetaStop:='		, '180deg',\n");
+fprintf(fid,"		'ThetaStep:='		, '10deg',\n");
+fprintf(fid,"		'PhiStart:='		, '0deg',\n");
+fprintf(fid,"		'PhiStop:='		, '360deg',\n");
+fprintf(fid,"		'PhiStep:='		, '10deg',\n");
+fprintf(fid,"		'UseLocalCS:='		, False\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oProject.SaveAs('D:\\\\ANSYS_FYP_DATA\\\\Antenna_design.aedt', True)\n");
+fprintf(fid,"oDesign.AnalyzeAll()\n");
+fprintf(fid,"oModule = oDesign.GetModule('ReportSetup')\n");
+fprintf(fid,"oModule.CreateReport('S Parameter Plot 1', 'Modal Solution Data', 'Rectangular Plot', 'Setup1 : Sweep', \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'Domain:='		, 'Sweep'\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'Freq:='		, ['All']\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'X Component:='		, 'Freq',\n");
+fprintf(fid,"		'Y Component:='		, ['dB(S(1,1))']\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oModule = oDesign.GetModule('ReportSetup')\n");
+fprintf(fid,"oModule.CreateReport('Axial Ratio Plot 1', 'Far Fields', 'Rectangular Plot', 'Setup1 : LastAdaptive', \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'Context:='		, 'Infinite Sphere1'\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'Theta:='		, ['All'],\n");
+fprintf(fid,"		'Phi:='			, ['0deg'],\n");
+fprintf(fid,"		'Freq:='		, ['1.57542GHz']\n");
+fprintf(fid,"	], \n");
+fprintf(fid,"	[\n");
+fprintf(fid,"		'X Component:='		, 'Theta',\n");
+fprintf(fid,"		'Y Component:='		, ['dB(AxialRatioValue)']\n");
+fprintf(fid,"	])\n");
+fprintf(fid,"oModule = oDesign.GetModule('ReportSetup')\n");
+
+% Export the data
+fprintf(fid,"oModule.ExportToFile('Axial Ratio Plot 1', 'D:/ANSYS_FYP_DATA/Axial Ratio Plot patch_W-" + num2str(patch_w) + " patch_L-" + num2str(patch_l) + ".csv', False)\n");
+fprintf(fid,"oModule.ExportToFile('S Parameter Plot 1', 'D:/ANSYS_FYP_DATA/S-11 Plot patch_W-" + num2str(patch_w) + " patch_L-" + num2str(patch_l) + ".csv', False)\n");
+
+fclose(fid);
+
+disp(['Python file "' fileName '" has been created.']);
+
+%%%%% End of writing python file %%%%%
+
+
+
+%%%%% Changing single quote to double quote in python file %%%%%
+
+% Step 1: Open file for reading
+fid = fopen(fileName, 'r');
+if fid == -1
+    error('Could not open file for reading.');
+end
+
+% Read all lines into a cell array
+lines = {};
+while ~feof(fid)
+    line = fgetl(fid);
+    line = strrep(line, '''', '"');  % Replace ' with ";
+    lines{end+1} = line;
+end
+fclose(fid);  % Close the file after reading
+
+% Step 2: Open file for writing
+fid = fopen(fileName, 'w');
+if fid == -1
+    error('Could not open file for writing.');
+end
+
+% Write updated lines back to the file
+for i = 1:length(lines)
+    fprintf(fid, '%s\n', lines{i});
+end
+fclose(fid);
+
+disp('All single quotes replaced with double quotes.');
+
+%%%%% End of chaging from single quote to double quote %%%%%
+
+
+
+%%%%% Exploiting ANSYS HFSS feature of running a python file %%%%%
+
+hfssExePath = "D:\AnsysEM\v241\Win64\ansysedt.exe";
+scriptFilePath = "D:\ANSYS_FYP_DATA\Antenna_design.py";
+
+runHFSSScriptBatch(hfssExePath, scriptFilePath);
+
+%%%%% End of Exploiting ANSYS HFSS feature of running a python file %%%%%
+
+
+
+
+
+
+
+
+
+    
+function runHFSSScriptBatch(hfssExePath, scriptFilePath)
+% runHFSSScriptBatch Launches HFSS to run a Python script, save S11, and exit.
+% Compatible with older MATLAB versions (uses char instead of string).
+
+    if nargin < 2
+        error('Usage: runHFSSScriptBatch(hfssExePath, scriptFilePath)');
+    end
+
+    % Ensure the inputs are char
+    if ~ischar(hfssExePath)
+        hfssExePath = char(hfssExePath);
+    end
+    if ~ischar(scriptFilePath)
+        scriptFilePath = char(scriptFilePath);
+    end
+
+    % Ensure paths are enclosed in double quotes
+    if hfssExePath(1) ~= '"'
+        hfssExePath = ['"', hfssExePath, '"'];
+    end
+    if scriptFilePath(1) ~= '"'
+        scriptFilePath = ['"', scriptFilePath, '"'];
+    end
+
+    % Build command
+    runScriptFlag = '-RunScript'; %RunScriptAndExit and RunScript another useful command
+    cmd = [hfssExePath, ' ', runScriptFlag, ' ', scriptFilePath];
+
+    fprintf('Running HFSS with command:\n%s\n', cmd);
+    [status, cmdout] = system(cmd);
+
+    if status ~= 0
+        error('HFSS execution failed (status=%d). Output:\n%s', status, cmdout);
+    end
+
+    fprintf('HFSS script completed successfully.\n');
+end
