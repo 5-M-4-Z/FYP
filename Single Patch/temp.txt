@@ -1,70 +1,46 @@
-import math
+clc;
+clear all;
 
-# Constants
-c = 3e8  # speed of light in m/s
+%%%%% Antenna design calculation %%%%%
+%%% width = x axis ; length = y axis %%%
+freq = 1575.42 * 10^6;
+subs_height = 0.508;
+subs_e = 3.55;
+mil = 25.4/1000;
+        
 
-def calculate_microstrip_patch(fo, er, h):
-    """
-    Calculate microstrip patch antenna dimensions
-    
-    Parameters:
-    fo: operating frequency (Hz)
-    er: relative permittivity of substrate
-    h: substrate height (m)
-    
-    Returns:
-    Dictionary containing all calculated parameters
-    """
-    
-    # Calculate patch width W
-    W = (c / (2 * fo)) * math.sqrt(2 / (er + 1))
-    
-    # Calculate effective permittivity
-    epsilon_eff = ((er + 1) / 2) + ((er - 1) / 2) * math.pow(1 + (12 * h / W), -0.5)
-    
-    # Calculate effective length
-    L_eff = c / (2 * fo * math.sqrt(epsilon_eff))
-    
-    # Calculate length extension
-    delta_L = 0.412 * h * ((epsilon_eff + 0.3) / (epsilon_eff - 0.258)) * ((W / h) + 0.264)
-    
-    # Calculate actual patch length
-    L = L_eff - 2 * delta_L
-    
-    # Calculate ground plane dimensions
-    Lg = 6 * h + L
-    Wg = 6 * h + W
-    
-    # Calculate feed point location
-    Xf = L / (2 * math.sqrt(epsilon_eff))
-    Yf = W / 2
-    
-    return {
-        'W': W,
-        'L': L,
-        'epsilon_eff': epsilon_eff,
-        'L_eff': L_eff,
-        'delta_L': delta_L,
-        'Lg': Lg,
-        'Wg': Wg,
-        'Xf': Xf,
-        'Yf': Yf
-    }
+patch_w = (3*10^11)/2/freq * (sqrt(2/(subs_e+1))); %63.1254
 
-# Example usage:
-if __name__ == "__main__":
-    # Example parameters (adjust as needed)
-    fo = 2.4e9  # 2.4 GHz
-    er = 4.4    # FR4 substrate
-    h = 1.6e-3  # 1.6 mm
-    
-    results = calculate_microstrip_patch(fo, er, h)
-    
-    print("Microstrip Patch Antenna Dimensions:")
-    print(f"Patch Width (W): {results['W']:.6f} m")
-    print(f"Patch Length (L): {results['L']:.6f} m")
-    print(f"Effective Permittivity: {results['epsilon_eff']:.4f}")
-    print(f"Ground Length (Lg): {results['Lg']:.6f} m")
-    print(f"Ground Width (Wg): {results['Wg']:.6f} m")
-    print(f"Feed Point (Xf, Yf): ({results['Xf']:.6f}, {results['Yf']:.6f}) m")
+e_reff = (subs_e+1)/2 + ((subs_e-1)/2 *(1 + 12*(subs_height/patch_w))^(-1/2) );
 
+delta_l = (  subs_height*0.412*( e_reff + 0.3 )*(  patch_w/subs_height + 0.264  )  ) / (  (e_reff - 0.258) * (patch_w/subs_height + 0.8) );
+
+patch_l = (3*10^11)/2/freq/sqrt(e_reff)  -2*delta_l;   %50.4588
+
+ground_w = 2*patch_w;   %126.2508
+
+ground_l = 2*patch_l;   %100.9176
+
+feed_x = patch_w/2;    %31.5627
+
+feed_y = patch_l/2/sqrt(e_reff);   %13.5000
+
+Q0 = (3*10^11*sqrt(subs_e)) / 4/freq/subs_height;
+
+truncated_length = patch_l*sqrt(1/2/Q0);   %
+
+% Since the antenna is from origin so we will be adding translating our feed point since the patch would be at the centre of ground
+
+feed_x = feed_x + (ground_w-patch_w)/2;   %63.1254
+feed_y = feed_y + (ground_l-patch_l)/2;   %38.7294
+
+antenna_x = (ground_w-patch_w)/2;   %31.5627
+antenna_y = (ground_l-patch_l)/2;   %25.2294
+
+truncatedTopLeft_x = [antenna_x   antenna_x+truncated_length   antenna_x ];   %31.5627   34.2478   31.5627
+truncatedTopLeft_y = [antenna_y+patch_l   antenna_y+patch_l   antenna_y+patch_l-truncated_length];   % 75.6882   75.6882   73.0030
+
+truncatedBottomRight_x = [antenna_x+patch_w   antenna_x+patch_w   antenna_x+patch_w-truncated_length];   %94.6881   94.6881   92.0030
+truncatedBottomRight_y = [antenna_y   antenna_y+truncated_length   antenna_y];  %25.2294   27.9145   25.2294
+
+%%%%% End Of Antenna design calculation %%%%%
