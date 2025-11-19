@@ -1,0 +1,70 @@
+import math
+
+# Constants
+c = 3e8  # speed of light in m/s
+
+def calculate_microstrip_patch(fo, er, h):
+    """
+    Calculate microstrip patch antenna dimensions
+    
+    Parameters:
+    fo: operating frequency (Hz)
+    er: relative permittivity of substrate
+    h: substrate height (m)
+    
+    Returns:
+    Dictionary containing all calculated parameters
+    """
+    
+    # Calculate patch width W
+    W = (c / (2 * fo)) * math.sqrt(2 / (er + 1))
+    
+    # Calculate effective permittivity
+    epsilon_eff = ((er + 1) / 2) + ((er - 1) / 2) * math.pow(1 + (12 * h / W), -0.5)
+    
+    # Calculate effective length
+    L_eff = c / (2 * fo * math.sqrt(epsilon_eff))
+    
+    # Calculate length extension
+    delta_L = 0.412 * h * ((epsilon_eff + 0.3) / (epsilon_eff - 0.258)) * ((W / h) + 0.264)
+    
+    # Calculate actual patch length
+    L = L_eff - 2 * delta_L
+    
+    # Calculate ground plane dimensions
+    Lg = 6 * h + L
+    Wg = 6 * h + W
+    
+    # Calculate feed point location
+    Xf = L / (2 * math.sqrt(epsilon_eff))
+    Yf = W / 2
+    
+    return {
+        'W': W,
+        'L': L,
+        'epsilon_eff': epsilon_eff,
+        'L_eff': L_eff,
+        'delta_L': delta_L,
+        'Lg': Lg,
+        'Wg': Wg,
+        'Xf': Xf,
+        'Yf': Yf
+    }
+
+# Example usage:
+if __name__ == "__main__":
+    # Example parameters (adjust as needed)
+    fo = 2.4e9  # 2.4 GHz
+    er = 4.4    # FR4 substrate
+    h = 1.6e-3  # 1.6 mm
+    
+    results = calculate_microstrip_patch(fo, er, h)
+    
+    print("Microstrip Patch Antenna Dimensions:")
+    print(f"Patch Width (W): {results['W']:.6f} m")
+    print(f"Patch Length (L): {results['L']:.6f} m")
+    print(f"Effective Permittivity: {results['epsilon_eff']:.4f}")
+    print(f"Ground Length (Lg): {results['Lg']:.6f} m")
+    print(f"Ground Width (Wg): {results['Wg']:.6f} m")
+    print(f"Feed Point (Xf, Yf): ({results['Xf']:.6f}, {results['Yf']:.6f}) m")
+
