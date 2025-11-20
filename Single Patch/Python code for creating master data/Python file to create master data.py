@@ -1,6 +1,8 @@
 import os
 import pandas as pd
 
+print("The file is running")
+
 # List of all the parameter for the single patch
 frequency = 1575.42*(10**6)
 mil = 0.0254
@@ -52,6 +54,7 @@ master_data = {
 lst = [r"D:\Meesam\FYP\Single Patch\Datasets\Feed x and y",
        r"D:\Meesam\FYP\Single Patch\Datasets\Patch Width & Length",
        r"D:\Meesam\FYP\Single Patch\Datasets\Truncation\Dataset - Truncation (0-25 mil)",
+       r"D:\Meesam\FYP\Single Patch\Datasets\Truncation\Dataset - Truncation (-25 to 0 mil - incomplete)",
        r"D:\Meesam\FYP\Single Patch\Datasets\Patch x and y"
        ]
 
@@ -144,6 +147,23 @@ for folder_path_1 in lst:
                         master_data["Truncation along Y"].append(truncY)
                         master_data["Peak Frequency"].append(peak_freq)
                         master_data["S11 dB value"].append(freq_db[ind])
+
+                    elif path_to_list == ['D:', 'Meesam', 'FYP', 'Single Patch', 'Datasets', 'Truncation', 'Dataset - Truncation (-25 to 0 mil - incomplete)', 'S11 Parameter']:
+                        name = filename[0:-4].split("_")
+                        truncX = float(name[name.index("truncX") + 1])
+                        truncY = float(name[name.index("truncY") + 1])
+                        
+
+                        master_data["Patch Width"].append(patch_width)
+                        master_data["Patch Length"].append(patch_length)
+                        master_data["Patch X"].append(patch_x)
+                        master_data["Patch Y"].append(patch_y)
+                        master_data["Feed X"].append(feed_x)
+                        master_data["Feed Y"].append(feed_y)
+                        master_data["Truncation along X"].append(truncX)
+                        master_data["Truncation along Y"].append(truncY)
+                        master_data["Peak Frequency"].append(peak_freq)
+                        master_data["S11 dB value"].append(freq_db[ind])
                     
                     elif path_to_list == ['D:', 'Meesam', 'FYP', 'Single Patch', 'Datasets', 'Patch x and y', 'S11 Parameter']:
                         name = filename[0:-4].split("_")
@@ -165,7 +185,8 @@ for folder_path_1 in lst:
                         master_data["S11 dB value"].append(freq_db[ind])
 
                     else:
-                        print("no patchW and patchL found in the csv file name")
+                        print(path_to_list, "alskd", filename)
+
 
                 # for key in master_data:
                 #     print("The length of",key,"=",len(master_data[key]))
@@ -207,8 +228,13 @@ for folder_path_1 in lst:
                     elif path_to_list == ['D:', 'Meesam', 'FYP', 'Single Patch', 'Datasets', 'Truncation', 'Dataset - Truncation (0-25 mil)','Axial Ratio Parameter']:
                         master_data["Axial Ratio at Fr (dB)"].append(axial_db_value)
 
+                    elif path_to_list == ['D:', 'Meesam', 'FYP', 'Single Patch', 'Datasets', 'Truncation', 'Dataset - Truncation (-25 to 0 mil - incomplete)', 'Axial Ratio Parameter']:
+                        master_data["Axial Ratio at Fr (dB)"].append(axial_db_value)
+
                     elif path_to_list == ['D:', 'Meesam', 'FYP', 'Single Patch', 'Datasets', 'Patch x and y','Axial Ratio Parameter']:
                         master_data["Axial Ratio at Fr (dB)"].append(axial_db_value)
+                    else:
+                        print(path_to_list, "alskd", filename)
 
                 
         
