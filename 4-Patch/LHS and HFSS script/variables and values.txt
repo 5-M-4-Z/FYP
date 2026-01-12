@@ -1,0 +1,20 @@
+values of parameters:
+
+hole_xx			0.55
+hole_yy 		82..0032
+truncation_x 		3
+trucation_y 		3
+patch_xsize_num		50
+patch_ysize_num		50
+patch_x_num		-25
+patch_y_num 		43
+
+
+
+
+
+
+
+
+
+
